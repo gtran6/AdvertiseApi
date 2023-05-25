@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">AdvertiseApi</string>
+    <string name="show_interstitial_ad">Show Interstitial Ad</string>
+</resources>
