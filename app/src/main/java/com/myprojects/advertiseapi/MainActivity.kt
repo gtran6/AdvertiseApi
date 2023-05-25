@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var mAdView: AdView
     private var mInterstitialAd: InterstitialAd? = null
     private var nativeAd: NativeAd? = null
+    private var clickCounter = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,23 +95,29 @@ class MainActivity : AppCompatActivity() {
                                     mAdView.loadAd(adRequest)
                                 }
 
+                                val maxClicks = resultObject.optInt("counter")
                                 binding.button.setOnClickListener {
-                                    var adRequest = AdRequest.Builder().build()
+                                    clickCounter++
+                                    if (clickCounter >= maxClicks) {
+                                        clickCounter = 0
 
-                                    InterstitialAd.load(this,interstitialAdUnitId, adRequest, object : InterstitialAdLoadCallback() {
-                                        override fun onAdFailedToLoad(adError: LoadAdError) {
-                                            mInterstitialAd = null
+                                        var adRequest = AdRequest.Builder().build()
+
+                                        InterstitialAd.load(this,interstitialAdUnitId, adRequest, object : InterstitialAdLoadCallback() {
+                                            override fun onAdFailedToLoad(adError: LoadAdError) {
+                                                mInterstitialAd = null
+                                            }
+
+                                            override fun onAdLoaded(interstitialAd: InterstitialAd) {
+                                                mInterstitialAd = interstitialAd
+                                            }
+                                        })
+
+                                        if (mInterstitialAd != null) {
+                                            mInterstitialAd?.show(this)
+                                        } else {
+                                            Log.d("TAG", "The interstitial ad wasn't ready yet.")
                                         }
-
-                                        override fun onAdLoaded(interstitialAd: InterstitialAd) {
-                                            mInterstitialAd = interstitialAd
-                                        }
-                                    })
-
-                                    if (mInterstitialAd != null) {
-                                        mInterstitialAd?.show(this)
-                                    } else {
-                                        Log.d("TAG", "The interstitial ad wasn't ready yet.")
                                     }
                                 }
 
