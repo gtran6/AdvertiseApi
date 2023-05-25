@@ -1,7 +1,10 @@
 package com.myprojects.advertiseapi
 
+import android.content.Context
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.ImageView
@@ -12,7 +15,7 @@ import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.VideoOptions
+import com.google.android.gms.ads.MobileAds
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
 import com.google.android.gms.ads.nativead.NativeAdView
@@ -20,11 +23,12 @@ import com.myprojects.advertiseapi.databinding.ActivityNativeAdBinding
 
 class NativeAdActivity : AppCompatActivity() {
     private lateinit var binding: ActivityNativeAdBinding
-    private lateinit var mNativeAd: NativeAd
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityNativeAdBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        MobileAds.initialize(this)
 
         loadNativeAd()
     }
@@ -32,16 +36,14 @@ class NativeAdActivity : AppCompatActivity() {
     private fun loadNativeAd() {
 
         val adLoader = AdLoader.Builder(this, "ca-app-pub-3940256099942544/2247696110")
-            .forNativeAd { p0 ->
-                if (isDestroyed || isFinishing || isChangingConfigurations) {
-                    p0.destroy()
-                }
-                mNativeAd.destroy()
-                mNativeAd = p0
+            .forNativeAd { ad : NativeAd ->
+                val inflater = parent.getSystemService(Context.LAYOUT_INFLATER_SERVICE)
+                        as LayoutInflater
+                val adView = layoutInflater
+                    .inflate(R.layout.ad_native, null) as NativeAdView
 
+                populate(adView, ad)
                 val adContainer = findViewById<FrameLayout>(R.id.frameNativeAd)
-                val adView = layoutInflater.inflate(R.layout.ad_native, null) as NativeAdView
-                populateNativeAdView(p0, adView)
                 adContainer.removeAllViews()
                 adContainer.addView(adView)
             }
@@ -49,22 +51,18 @@ class NativeAdActivity : AppCompatActivity() {
                 override fun onAdFailedToLoad(adError: LoadAdError) {
                 }
             })
+            .withNativeAdOptions(NativeAdOptions.Builder()
+                .build())
             .build()
-        val videoOptions = VideoOptions.Builder()
-            .setStartMuted(true)
-            .build()
-
-        val nativeAdOptions = NativeAdOptions.Builder()
-            .setVideoOptions(videoOptions)
-            .build()
-
         adLoader.loadAd(AdRequest.Builder().build())
 
     }
 
-    private fun populateNativeAdView(nativeAd: NativeAd, adView: NativeAdView) {
-        adView.mediaView = adView.findViewById(R.id.ad_media)
+    fun populate(parent: ViewGroup, ad: NativeAd) {
+        val inflater = parent.context.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val adView = inflater.inflate(R.layout.ad_native, parent) as NativeAdView
 
+        adView.mediaView = adView.findViewById(R.id.ad_media)
         adView.headlineView = adView.findViewById(R.id.ad_headline)
         adView.bodyView = adView.findViewById(R.id.ad_body)
         adView.callToActionView = adView.findViewById(R.id.ad_call_to_action)
@@ -74,54 +72,56 @@ class NativeAdActivity : AppCompatActivity() {
         adView.storeView = adView.findViewById(R.id.ad_store)
         adView.advertiserView = adView.findViewById(R.id.ad_advertiser)
 
-        (adView.headlineView as TextView).text = nativeAd.headline
-        adView.mediaView!!.setMediaContent(nativeAd.mediaContent!!)
+        (adView.headlineView as TextView).text = ad.headline
+        adView.mediaView!!.setMediaContent(ad.mediaContent!!)
 
-        if (nativeAd.body == null) {
+        if (ad.body == null) {
             adView.bodyView!!.visibility = View.INVISIBLE
         } else {
             adView.bodyView!!.visibility = View.VISIBLE
-            (adView.bodyView as TextView).text = nativeAd.body
+            (adView.bodyView as TextView).text = ad.body
         }
-        if (nativeAd.callToAction == null) {
+        if (ad.callToAction == null) {
             adView.callToActionView!!.visibility = View.INVISIBLE
         } else {
             adView.callToActionView!!.visibility = View.VISIBLE
-            (adView.callToActionView as Button).text = nativeAd.callToAction
+            (adView.callToActionView as Button).text = ad.callToAction
         }
-        if (nativeAd.icon == null) {
+        if (ad.icon == null) {
             adView.iconView!!.visibility = View.GONE
         } else {
             (adView.iconView as ImageView).setImageDrawable(
-                nativeAd.icon!!.drawable
+                ad.icon!!.drawable
             )
             adView.iconView!!.visibility = View.VISIBLE
         }
-        if (nativeAd.price == null) {
+        if (ad.price == null) {
             adView.priceView!!.visibility = View.INVISIBLE
         } else {
             adView.priceView!!.visibility = View.VISIBLE
-            (adView.priceView as TextView).text = nativeAd.price
+            (adView.priceView as TextView).text = ad.price
         }
-        if (nativeAd.store == null) {
+        if (ad.store == null) {
             adView.storeView!!.visibility = View.INVISIBLE
         } else {
             adView.storeView!!.visibility = View.VISIBLE
-            (adView.storeView as TextView).text = nativeAd.store
+            (adView.storeView as TextView).text = ad.store
         }
-        if (nativeAd.starRating == null) {
+        if (ad.starRating == null) {
             adView.starRatingView!!.visibility = View.INVISIBLE
         } else {
-            (adView.starRatingView as RatingBar).rating = nativeAd.starRating!!.toFloat()
+            (adView.starRatingView as RatingBar).rating = ad.starRating!!.toFloat()
             adView.starRatingView!!.visibility = View.VISIBLE
         }
-        if (nativeAd.advertiser == null) {
+        if (ad.advertiser == null) {
             adView.advertiserView!!.visibility = View.INVISIBLE
         } else {
-            (adView.advertiserView as TextView).text = nativeAd.advertiser
+            (adView.advertiserView as TextView).text = ad.advertiser
             adView.advertiserView!!.visibility = View.VISIBLE
         }
 
-        adView.setNativeAd(nativeAd)
+        adView.setNativeAd(ad)
+        parent.removeAllViews()
+        parent.addView(adView)
     }
 }

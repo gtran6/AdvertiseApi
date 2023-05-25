@@ -2,18 +2,10 @@ package com.myprojects.advertiseapi
 
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
-import android.view.View
-import android.widget.Button
-import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
-import com.google.android.gms.ads.AdListener
-import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.AdSize
 import com.google.android.gms.ads.AdView
@@ -26,11 +18,8 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import com.google.android.gms.ads.LoadAdError
-import com.google.android.gms.ads.MediaContent
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.nativead.NativeAd
-import com.google.android.gms.ads.nativead.NativeAdOptions
-import com.google.android.gms.ads.nativead.NativeAdView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -101,10 +90,9 @@ class MainActivity : AppCompatActivity() {
                                 val maxClicks = resultObject.optInt("counter")
                                 binding.button.setOnClickListener {
                                     clickCounter++
-                                    if (clickCounter >= maxClicks) {
-                                        clickCounter = 0
+                                    if (clickCounter % maxClicks == 0) {
 
-                                        var adRequest = AdRequest.Builder().build()
+                                        val adRequest = AdRequest.Builder().build()
 
                                         InterstitialAd.load(this,interstitialAdUnitId, adRequest, object : InterstitialAdLoadCallback() {
                                             override fun onAdFailedToLoad(adError: LoadAdError) {
@@ -126,7 +114,6 @@ class MainActivity : AppCompatActivity() {
 
                             }
                         } catch (e: Exception) {
-                            // Handle any exceptions that occurred during the API call
                             Log.e("network", e.localizedMessage)
                         }
                     }
