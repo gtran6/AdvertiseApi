@@ -1,6 +1,7 @@
 package com.myprojects.advertiseapi
 
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -25,9 +26,11 @@ import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import com.google.android.gms.ads.LoadAdError
+import com.google.android.gms.ads.MediaContent
 import com.google.android.gms.ads.interstitial.InterstitialAdLoadCallback
 import com.google.android.gms.ads.nativead.NativeAd
 import com.google.android.gms.ads.nativead.NativeAdOptions
+import com.google.android.gms.ads.nativead.NativeAdView
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -80,7 +83,7 @@ class MainActivity : AppCompatActivity() {
                                 val nativeAdUnitId = resultObject.optString("google_native")
 
                                 binding.btnNativeAd.setOnClickListener {
-
+                                    startActivity(Intent(this, NativeAdActivity::class.java))
                                 }
 
                                 if (!bannerAdUnitId.isNullOrEmpty()) {
@@ -135,5 +138,4 @@ class MainActivity : AppCompatActivity() {
             }
         }.start()
     }
-
 }
